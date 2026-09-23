@@ -39,7 +39,7 @@ def main():
     intro_path = os.path.join(tmp, "intro.mp4")
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", args.source,
                     "-t", f"{intro_end:.6f}", "-an",
-                    "-c:v", "libx264", "-crf", "16", "-preset", "fast",
+                    "-c:v", "libx264", "-crf", "16", "-preset", "ultrafast",
                     intro_path], check=True)
 
     seg_audio = os.path.join(tmp, "seg_audio.m4a")
@@ -51,7 +51,7 @@ def main():
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", args.swapped,
                     "-i", seg_audio,
                     "-map", "0:v", "-map", "1:a",
-                    "-c:v", "libx264", "-crf", "16", "-preset", "fast",
+                    "-c:v", "libx264", "-crf", "16", "-preset", "ultrafast",
                     "-vf", "scale=576:1024:force_original_aspect_ratio=decrease,pad=576:1024:-1:-1",
                     "-c:a", "copy", "-shortest", swapped_norm], check=True)
 
@@ -61,7 +61,7 @@ def main():
 
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
                     "-i", concat_list, "-c:v", "libx264", "-crf", "17",
-                    "-preset", "medium", "-c:a", "aac", "-b:a", "128k",
+                    "-preset", "ultrafast", "-c:a", "aac", "-b:a", "128k",
                     "-movflags", "+faststart", args.out], check=True)
     print("[*] wrote", args.out)
 
