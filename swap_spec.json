@@ -1,0 +1,35 @@
+{
+  "mission": "Replace Jackie Chan (second subject) with Mr. Bean doing the same motions",
+  "source": {
+    "repo": "https://github.com/ssmurfgg04-gif/jackie-chan",
+    "file": "53140.mp4",
+    "resolution": "576x1024",
+    "fps": 30,
+    "frames": 263,
+    "duration_s": 8.766667
+  },
+  "segment_analysis": {
+    "intro_frames": [0, 96],
+    "cut_frame": 97,
+    "jackie_frames": [97, 262],
+    "cut_time_s": 3.2333,
+    "segment_end_s": 8.766667,
+    "segment_frames": 166
+  },
+  "reference_image": {
+    "file": "bean_ref.png",
+    "description": "Mr. Bean (Rowan Atkinson), front-facing, waist-up, tweed jacket + red tie, clean background"
+  },
+  "swap": {
+    "model": "Wan2.2-Animate-14B",
+    "mode": "Character Swap",
+    "executor": "HuggingFace ZeroGPU space alexnasa/Wan2.2-Animate-ZEROGPU",
+    "max_duration_s": 5,
+    "resolution_choice": "Low Res",
+    "gpu_seconds_estimate": 150
+  },
+  "reassembly": {
+    "audio": "original AAC laid back over swapped segment",
+    "intro": "original frames 0-96 untouched"
+  }
+}

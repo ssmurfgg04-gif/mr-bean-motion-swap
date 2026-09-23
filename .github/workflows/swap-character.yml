@@ -1,0 +1,70 @@
+# Full-body character swap via Wan2.2-Animate on HF ZeroGPU.
+# Requires repo secret: HF_TOKEN (any valid HuggingFace token of the account running the job).
+name: swap-character
+on:
+  workflow_dispatch:
+    inputs:
+      input_video_url:
+        description: "Direct URL of the driving video (person to replace)"
+        required: true
+      ref_image_url:
+        description: "Direct URL of the character reference image"
+        required: true
+      cut_start:
+        description: "Start time (seconds) of the segment to swap"
+        default: "0"
+      cut_end:
+        description: "End time (seconds); empty = until video end"
+        default: ""
+      duration:
+        description: "max_duration_s for Wan-Animate"
+        default: "5"
+      resolution:
+        description: "Low Res | Medium Res"
+        default: "Low Res"
+
+jobs:
+  swap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          pip install gradio_client huggingface_hub
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Prepare segment
+        run: |
+          mkdir -p work output
+          curl -sL -o work/input.mp4 "${{ github.event.inputs.input_video_url }}"
+          curl -sL -o work/ref.png "${{ github.event.inputs.ref_image_url }}"
+          ffprobe -v error -show_entries format=duration -of csv=p=0 work/input.mp4
+          START="${{ github.event.inputs.cut_start }}"
+          END="${{ github.event.inputs.cut_end }}"
+          if [ -z "$END" ]; then
+            ffmpeg -y -v error -ss "$START" -i work/input.mp4 -c:v libx264 -crf 16 -preset fast -c:a aac work/segment.mp4
+          else
+            ffmpeg -y -v error -ss "$START" -to "$END" -i work/input.mp4 -c:v libx264 -crf 16 -preset fast -c:a aac work/segment.mp4
+          fi
+          echo "segment ready"
+      - name: Run Wan2.2-Animate character swap
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python3 scripts/run_swap.py work/segment.mp4 work/ref.png output \
+            --duration "${{ github.event.inputs.duration }}" \
+            --resolution "${{ github.event.inputs.resolution }}"
+      - name: Reattach audio (if missing)
+        run: |
+          HAS_AUDIO=$(ffprobe -v error -select_streams a -show_entries stream=codec_type -of csv=p=0 output/bean_swapped.mp4 | head -1)
+          if [ "$HAS_AUDIO" != "audio" ]; then
+            ffmpeg -y -v error -i output/bean_swapped.mp4 -i work/segment.mp4 -map 0:v -map 1:a -c:v copy -shortest output/bean_swapped_audio.mp4
+            mv output/bean_swapped_audio.mp4 output/bean_swapped.mp4
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bean-swapped
+          path: output/
