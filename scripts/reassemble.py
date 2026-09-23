@@ -52,6 +52,7 @@ def main():
                     "-i", seg_audio,
                     "-map", "0:v", "-map", "1:a",
                     "-c:v", "libx264", "-crf", "16", "-preset", "fast",
+                    "-vf", "scale=576:1024:force_original_aspect_ratio=decrease,pad=576:1024:-1:-1",
                     "-c:a", "copy", "-shortest", swapped_norm], check=True)
 
     concat_list = os.path.join(tmp, "list.txt")
