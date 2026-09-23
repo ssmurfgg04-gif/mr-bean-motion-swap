@@ -69,3 +69,27 @@ python3 scripts/reassemble.py --source 53140.mp4 --swapped output/bean_swapped.m
   waist-up photo (classic tweed + red tie).
 - Responsible use: for personal/creative parody testing. Do not use outputs to
   deceive; respect likeness rights of real people.
+
+## Results (shipped test)
+
+| Artifact | Description |
+|---|---|
+| `results/final_reel_v2.mp4` | **Final reel**: original intro (frames 0-96) + full Mr. Bean segment (5.5s) + original audio |
+| `results/final_reel_v1.mp4` | First delivery (segment capped at 4.97s by anonymous ZeroGPU quota) |
+| `results/bean_segment_full.mp4` | Complete swapped segment (v1 + chunk2 stitched w/ 0.25s crossfade) |
+| `results/bean_swapped.mp4` | Raw Wan2.2-Animate output, chunk 1 (352x640, 149 frames) |
+| `results/bean_swapped_chunk2.mp4` | Raw output, chunk 2 (segment tail, 90 frames) |
+| `results/critique/` | 4-round VLM critique reports (JSON + motion-comparison grids) |
+
+### VLM critique summary (4 rounds)
+
+1. **Overall**: 7/10 — clean reel structure, intentional hard cut preserved; some ghosting at jawline typical of the model at 352x640.
+2. **Identity**: consistent single identity across the segment, no Jackie Chan leakage, features stable frame-to-frame. Model renders a *younger* Mr. Bean (ref image is classic-era Bean).
+3. **Motion fidelity** (5 matched-frame pairs vs original): same gestures, head positions and framing in 5/5; only fast-motion hand shows extra blur.
+4. **Technical**: background (curtains/painting/wall) preserved from source; hands render correctly; upscale from 360x640 visible but acceptable.
+
+### How the no-GPU route actually ran
+
+- GitHub Actions `ubuntu-latest` (free, CPU-only) did all orchestration.
+- The swap itself ran on HuggingFace ZeroGPU via `gradio_client`, **anonymously** — anonymous ZeroGPU quota is per-IP and the fresh Actions runner IPs had enough for 150s GPU jobs (duration<=5s, Low Res). `duration=6` needs 210s > anonymous cap, so the segment was split into two chunks and crossfaded.
+- For unattended future runs, add an HF token as the `HF_TOKEN` repo secret (higher quota, Medium Res possible).
