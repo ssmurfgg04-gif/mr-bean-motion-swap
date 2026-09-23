@@ -31,8 +31,7 @@ def main():
     if not token and args.hf_token_file and os.path.exists(args.hf_token_file):
         token = open(args.hf_token_file).read().strip()
     if not token:
-        print("ERROR: no HF token given (anonymous ZeroGPU quota is almost always exhausted)", file=sys.stderr)
-        sys.exit(2)
+        print("WARN: no HF token - attempting ANONYMOUS call (per-IP ZeroGPU quota)", file=sys.stderr)
 
     from gradio_client import Client, handle_file
 
