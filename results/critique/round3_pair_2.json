@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gesture (the \"stop\" or \"karate chop\" pose) is the same.\n2) **Yes**, the head position and orientation (facing forward, slightly tilted) are consistent.\n3) **Yes**, the body framing and camera angle are identical.\n4) **Yes**, there is noticeable motion blur on the right hand/fingers in the RIGHT image, and some minor rendering artifacts around the hair and face edges.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790192390,
+  "id": "202609240339479c741352f2b94ec4",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609240339479c741352f2b94ec4",
+  "usage": {
+    "completion_tokens": 95,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 482,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 577
+  }
+}

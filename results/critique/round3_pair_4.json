@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Same hand/arm gesture?** Yes, the right hand is raised in a \"V\" sign and the left arm is positioned similarly.\n2) **Same head position/orientation?** Yes, the head is facing forward at a similar angle, though the facial features are different (swapped).\n3) **Same body framing?** Yes, the upper body and background are framed identically.\n4) **Motion blur or rendering defects on the RIGHT?** No significant motion blur; the rendering appears clean with only the expected face-swap artifacts.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790192394,
+  "id": "202609240339528bd113c42f4a488c",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609240339528bd113c42f4a488c",
+  "usage": {
+    "completion_tokens": 115,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 482,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 597
+  }
+}

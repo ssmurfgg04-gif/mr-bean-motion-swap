@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm positions (arms down, hands out of frame) are the same.\n2) **Yes**, the head is in a similar upright, forward-facing orientation.\n3) **Yes**, the body framing and upper-body posture are consistent.\n4) **No**, there is no significant motion blur or rendering defects; the image appears clear and stable.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790192384,
+  "id": "20260924033942898792d2367d484d",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260924033942898792d2367d484d",
+  "usage": {
+    "completion_tokens": 77,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 482,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 559
+  }
+}

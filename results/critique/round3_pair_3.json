@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gestures (one hand raised, one extended forward) are the same.\n2) **No**, the head orientation and facial expression differ significantly.\n3) **Yes**, the body framing and camera angle are identical.\n4) **No**, there is no noticeable motion blur or rendering defects on the right.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790192392,
+  "id": "202609240339501bf4b03dd73e4d30",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609240339501bf4b03dd73e4d30",
+  "usage": {
+    "completion_tokens": 69,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 482,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 551
+  }
+}

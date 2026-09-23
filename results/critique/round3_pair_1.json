@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gesture (hands on head) is the same.\n2) **Yes**, the head position and orientation are consistent.\n3) **Yes**, the body framing and background alignment are identical.\n4) **No**, there is no noticeable motion blur or rendering defects; the swap appears clean.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790192387,
+  "id": "20260924033945b11c384fabaf4477",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260924033945b11c384fabaf4477",
+  "usage": {
+    "completion_tokens": 66,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 482,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 548
+  }
+}
