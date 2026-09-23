@@ -1,0 +1,39 @@
+# Try the Wan2.2-Animate ZeroGPU swap ANONYMOUSLY from the Actions runner IP
+# (anonymous ZeroGPU quota is per-IP; runner IPs may have fresh quota).
+name: zerogpu-anon-swap
+on:
+  workflow_dispatch:
+    inputs:
+      duration:
+        default: "5"
+
+permissions:
+  contents: write
+
+jobs:
+  swap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install client
+        run: pip install gradio_client
+      - name: Attempt anonymous swap
+        run: |
+          mkdir -p output
+          python3 scripts/run_swap.py jackie_segment.mp4 bean_ref.png output \
+            --duration "${{ github.event.inputs.duration }}" \
+            --resolution "Low Res" || echo "SWAP_FAILED_RC=$?" >> swap_status.txt
+          cat swap_status.txt 2>/dev/null || true
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.email "bot@bean.local"
+          git config user.name "beanbot"
+          git add -f output swap_status.txt 2>/dev/null || true
+          git commit -m "zerogpu anon result $(date -u +%H:%M:%S)" || true
+          git pull --rebase -q origin main || true
+          git push || true
