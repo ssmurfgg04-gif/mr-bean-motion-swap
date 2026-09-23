@@ -6,6 +6,12 @@ on:
     inputs:
       duration:
         default: "5"
+      input_path:
+        description: "Path in repo of the clip to swap"
+        default: "jackie_segment.mp4"
+      out_name:
+        description: "Output file name"
+        default: "bean_swapped.mp4"
 
 permissions:
   contents: write
@@ -24,7 +30,8 @@ jobs:
       - name: Attempt anonymous swap
         run: |
           mkdir -p output
-          python3 scripts/run_swap.py jackie_segment.mp4 bean_ref.png output \
+          rm -f output/bean_swapped.mp4
+          python3 scripts/run_swap.py "${{ github.event.inputs.input_path }}" bean_ref.png output \
             --duration "${{ github.event.inputs.duration }}" \
             --resolution "Low Res" || echo "SWAP_FAILED_RC=$?" >> swap_status.txt
           cat swap_status.txt 2>/dev/null || true
@@ -33,7 +40,9 @@ jobs:
         run: |
           git config user.email "bot@bean.local"
           git config user.name "beanbot"
+          OUT="${{ github.event.inputs.out_name }}"
+          if [ -f output/bean_swapped.mp4 ] && [ "$OUT" != "bean_swapped.mp4" ]; then mv output/bean_swapped.mp4 "output/$OUT"; fi
           git add -f output swap_status.txt 2>/dev/null || true
-          git commit -m "zerogpu anon result $(date -u +%H:%M:%S)" || true
+          git commit -m "zerogpu anon result $OUT $(date -u +%H:%M:%S)" || true
           git pull --rebase -q origin main || true
           git push || true
