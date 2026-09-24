@@ -23,7 +23,7 @@ import argparse, os, shutil, sys, time
 QUOTA_MARKERS = ("exceeded zerogpu", "quota", "runs limit", "gpu quota")
 RETRY_MARKERS = ("sleeping", "starting", "building", "paused", "timeout",
                  "connection error", "503", "502", "no gpu was available",
-                 "queue")
+                 "queue", "task aborted", "aborted")
 
 
 def classify(err_text: str) -> int:
