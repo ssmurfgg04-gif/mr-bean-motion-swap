@@ -16,7 +16,9 @@ subprocess.run(["ffmpeg","-y","-v","error",
                 f"output/chunk_${IDX}/send.mp4"], check=True)
 EOF
 RESOLUTION="${RESOLUTION:-Low Res}"
+MODE="${MODE:-Character Swap}"
 python3 scripts/run_swap.py "output/chunk_${IDX}/send.mp4" shared/ref.png \
   "output/chunk_${IDX}" \
   --resolution "$RESOLUTION" \
+  --rc-mode "$MODE" \
   --attempts 3
