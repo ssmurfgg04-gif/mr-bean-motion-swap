@@ -124,6 +124,7 @@ jobs:
         env:
           RESOLUTION: ${{ needs.plan.outputs.res }}
           MODE: ${{ needs.plan.outputs.mode }}
+          START_DELAY: ${{ matrix.chunk }}
         run: bash scripts/ci_chunk.sh ${{ matrix.chunk }}
       - uses: actions/upload-artifact@v4
         if: always()
@@ -133,6 +134,7 @@ jobs:
 
   assemble:
     needs: [plan, swap]
+    if: always() && needs.plan.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     outputs:
@@ -182,7 +184,7 @@ jobs:
 
   swap-retry:
     needs: [plan, assemble]
-    if: needs.assemble.outputs.missing != '[]'
+    if: always() && needs.assemble.result == 'success' && needs.assemble.outputs.missing != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -208,6 +210,7 @@ jobs:
         env:
           RESOLUTION: ${{ needs.plan.outputs.res }}
           MODE: ${{ needs.plan.outputs.mode }}
+          START_DELAY: ${{ matrix.chunk }}
         run: bash scripts/ci_chunk.sh ${{ matrix.chunk }}
       - uses: actions/upload-artifact@v4
         if: always()
@@ -217,7 +220,7 @@ jobs:
 
   finalize:
     needs: [plan, assemble, swap-retry]
-    if: always() && needs.assemble.outputs.missing != '[]'
+    if: always() && needs.assemble.outputs.missing != '[]' && needs.swap-retry.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:

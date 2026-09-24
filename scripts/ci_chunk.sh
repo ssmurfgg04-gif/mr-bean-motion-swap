@@ -17,8 +17,11 @@ subprocess.run(["ffmpeg","-y","-v","error",
 EOF
 RESOLUTION="${RESOLUTION:-Low Res}"
 MODE="${MODE:-Character Swap}"
+DELAY=$(( ${START_DELAY:-0} * 20 ))   # stagger matrix jobs (chunk index * 20s)
+[ "$DELAY" -gt 0 ] && sleep "$DELAY"
 python3 scripts/run_swap.py "output/chunk_${IDX}/send.mp4" shared/ref.png \
   "output/chunk_${IDX}" \
   --resolution "$RESOLUTION" \
   --rc-mode "$MODE" \
-  --attempts 3
+  --start-delay 0 \
+  --attempts 4

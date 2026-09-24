@@ -21,7 +21,9 @@ Usage:
 import argparse, os, shutil, sys, time
 
 QUOTA_MARKERS = ("exceeded zerogpu", "quota", "runs limit", "gpu quota")
-RETRY_MARKERS = ("sleeping", "starting", "building", "paused", "timeout", "connection error", "503", "502")
+RETRY_MARKERS = ("sleeping", "starting", "building", "paused", "timeout",
+                 "connection error", "503", "502", "no gpu was available",
+                 "queue")
 
 
 def classify(err_text: str) -> int:
@@ -61,7 +63,8 @@ def main():
     ap.add_argument("--fallback-spaces", default="")  # comma-separated
     ap.add_argument("--hf-token", default=None)
     ap.add_argument("--hf-token-file", default=None)
-    ap.add_argument("--attempts", type=int, default=3)
+    ap.add_argument("--attempts", type=int, default=4)
+    ap.add_argument("--start-delay", type=int, default=0)  # stagger matrix jobs
     ap.add_argument("--rc-mode", default="Character Swap")  # or "Pose Retarget"
     args = ap.parse_args()
 
@@ -75,6 +78,9 @@ def main():
     os.makedirs(args.out_dir, exist_ok=True)
 
     last_err = ""
+    if args.start_delay > 0:
+        print(f"[*] staggering: sleeping {args.start_delay}s", flush=True)
+        time.sleep(args.start_delay)
     for space in spaces:
         for attempt in range(1, args.attempts + 1):
             try:
@@ -112,7 +118,7 @@ def main():
                     print("[!] QUOTA exhausted on this IP -> exit 4 (CI should rerun on fresh runner)")
                     return 4
                 if code == 5 and attempt < args.attempts:
-                    wait = 45 * attempt
+                    wait = 60 * attempt if "no gpu" in last_err.lower() else 45 * attempt
                     print(f"[*] retryable -> sleeping {wait}s", flush=True)
                     time.sleep(wait)
                 elif code == 3:
