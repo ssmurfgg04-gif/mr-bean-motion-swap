@@ -1,0 +1,250 @@
+# Wan2.2-Animate character swap — pipeline v2
+#
+# The "infinite free GPU" pattern, formalized:
+#   * Anonymous ZeroGPU quota is PER-IP (~160 GPU-s).
+#   * Every GitHub Actions runner gets a fresh IP.
+#   * => one matrix job per chunk = parallel fresh quotas. Up to 20 runners.
+#   * Quota failures are detected and re-run in a SECOND matrix stage on new
+#     runners (fresh IPs again) until all chunks exist.
+#
+# Chunking is motion-aware (seams at low-motion valleys) and budget-sized, so
+# even Medium Res fits the anonymous cap per chunk.
+#
+# IMPORTANT for identity lock: pass as ref_image_url an EDITED FIRST FRAME —
+# the target character composited into the driving video's first frame
+# (same scene/pose/lighting). A white-background studio portrait works far worse.
+
+name: swap-character-v2
+on:
+  workflow_dispatch:
+    inputs:
+      input_video_url:
+        description: "Direct URL of the driving video"
+        required: true
+      ref_image_url:
+        description: "Direct URL of the reference (edited first frame recommended)"
+        required: true
+      cut_start:
+        description: "Segment start (seconds)"
+        default: "0"
+      cut_end:
+        description: "Segment end (seconds); empty = video end"
+        default: ""
+      resolution:
+        description: "Low Res | Medium Res"
+        default: "Medium Res"
+      max_gpu_s:
+        description: "GPU-second budget per chunk (anonymous cap ~160)"
+        default: "140"
+      overlap_s:
+        description: "Chunk overlap seconds"
+        default: "0.4"
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.mk.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        run: |
+          pip install numpy
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Fetch inputs and cut segment
+        run: |
+          mkdir -p shared
+          curl -sL -o shared/input.mp4 "${{ github.event.inputs.input_video_url }}"
+          curl -sL -o shared/ref.png "${{ github.event.inputs.ref_image_url }}"
+          START="${{ github.event.inputs.cut_start }}"
+          END="${{ github.event.inputs.cut_end }}"
+          if [ -z "$END" ]; then
+            ffmpeg -y -v error -ss "$START" -i shared/input.mp4 -c:v libx264 -crf 16 -preset fast -an shared/segment.mp4
+          else
+            ffmpeg -y -v error -ss "$START" -to "$END" -i shared/input.mp4 -c:v libx264 -crf 16 -preset fast -an shared/segment.mp4
+          fi
+          ffprobe -v error -count_frames -select_streams v:0 \
+            -show_entries stream=nb_read_frames -of csv=p=0 shared/segment.mp4
+      - name: Plan motion-aware chunks
+        id: mk
+        run: |
+          python3 scripts/plan_chunks.py shared/segment.mp4 --out plan.json \
+            --resolution "${{ github.event.inputs.resolution }}" \
+            --max-gpu-s "${{ github.event.inputs.max_gpu_s }}" \
+            --overlap-s "${{ github.event.inputs.overlap_s }}"
+          IDX=$(python3 -c "import json;print(json.dumps([c['index'] for c in json.load(open('plan.json'))['chunks']]))")
+          echo "matrix={\"chunk\": $IDX}" >> "$GITHUB_OUTPUT"
+          echo "res=${{ github.event.inputs.resolution }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: plan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shared
+          path: shared/segment.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ref
+          path: shared/ref.png
+
+  swap:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      max-parallel: 20
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        run: |
+          pip install gradio_client
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - uses: actions/download-artifact@v4
+        with: { name: plan, path: . }
+      - uses: actions/download-artifact@v4
+        with: { name: shared, path: shared }
+      - uses: actions/download-artifact@v4
+        with: { name: ref, path: shared }
+      - name: Cut + swap my chunk (anonymous quota, fresh IP)
+        env:
+          RESOLUTION: ${{ needs.plan.outputs.res }}
+        run: bash scripts/ci_chunk.sh ${{ matrix.chunk }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chunk-${{ matrix.chunk }}
+          path: output/chunk_${{ matrix.chunk }}/
+
+  assemble:
+    needs: [plan, swap]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      missing: ${{ steps.check.outputs.missing }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        run: |
+          pip install numpy opencv-python-headless
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - uses: actions/download-artifact@v4
+        with: { name: plan, path: . }
+      - uses: actions/download-artifact@v4
+        with: { name: shared, path: shared }
+      - uses: actions/download-artifact@v4
+        with: { name: ref, path: shared }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: chunk-*
+          path: chunks_raw
+      - name: Normalize chunk layout + completeness check
+        id: check
+        run: |
+          mkdir -p chunks
+          for d in chunks_raw/chunk-*; do
+            [ -d "$d" ] || continue
+            idx="${d##*chunk-}"
+            mkdir -p "chunks/chunk_$idx"
+            cp "$d"/* "chunks/chunk_$idx/" 2>/dev/null || true
+          done
+          bash scripts/ci_assemble.sh stage1 || RC=$?
+          if [ "${RC:-0}" = "42" ]; then
+            echo "missing=$(cat missing.json)" >> "$GITHUB_OUTPUT"
+            echo "some chunks missing -> retry stage with fresh IPs"
+          else
+            echo "missing=[]" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assembled-result
+          path: |
+            stage1/
+            missing.json
+
+  swap-retry:
+    needs: [plan, assemble]
+    if: needs.assemble.outputs.missing != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      max-parallel: 20
+      fail-fast: false
+      matrix:
+        chunk: ${{ fromJSON(needs.assemble.outputs.missing) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        run: |
+          pip install gradio_client
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - uses: actions/download-artifact@v4
+        with: { name: plan, path: . }
+      - uses: actions/download-artifact@v4
+        with: { name: shared, path: shared }
+      - uses: actions/download-artifact@v4
+        with: { name: ref, path: shared }
+      - name: Retry my chunk on a FRESH IP
+        env:
+          RESOLUTION: ${{ needs.plan.outputs.res }}
+        run: bash scripts/ci_chunk.sh ${{ matrix.chunk }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chunk-${{ matrix.chunk }}
+          path: output/chunk_${{ matrix.chunk }}/
+
+  finalize:
+    needs: [plan, assemble, swap-retry]
+    if: always() && needs.assemble.outputs.missing != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        run: |
+          pip install numpy opencv-python-headless
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - uses: actions/download-artifact@v4
+        with: { name: plan, path: . }
+      - uses: actions/download-artifact@v4
+        with: { name: shared, path: shared }
+      - uses: actions/download-artifact@v4
+        with: { name: ref, path: shared }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: chunk-*
+          path: chunks_raw
+      - name: Reassemble with retried chunks
+        run: |
+          mkdir -p chunks
+          for d in chunks_raw/chunk-*; do
+            [ -d "$d" ] || continue
+            idx="${d##*chunk-}"
+            mkdir -p "chunks/chunk_$idx"
+            cp "$d"/* "chunks/chunk_$idx/" 2>/dev/null || true
+          done
+          bash scripts/ci_assemble.sh final
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-swap
+          path: |
+            final/swapped_final.mp4
+            final/enh_debug/
