@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gesture (hands on head) is the same.\n2) **Yes**, the head position and orientation are consistent.\n3) **Yes**, the body framing and camera angle are identical.\n4) **Yes**, there are rendering defects on the right, specifically a visible seam/artifact around the neck/collar area where the face was swapped.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790227619,
+  "id": "2026092413265639df87d19e9f44ab",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092413265639df87d19e9f44ab",
+  "usage": {
+    "completion_tokens": 77,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 407,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 484
+  }
+}

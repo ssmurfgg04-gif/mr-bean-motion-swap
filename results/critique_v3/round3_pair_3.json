@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gesture (right hand raised with palm forward, left hand lower) is the same.\n2) **Yes**, the head position and orientation are the same.\n3) **Yes**, the body framing and clothing are consistent.\n4) **Yes**, there is motion blur/smearing on the lower-left hand in the swapped frame.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790227623,
+  "id": "20260924132701833b4c3bca3a469c",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260924132701833b4c3bca3a469c",
+  "usage": {
+    "completion_tokens": 74,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 407,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 481
+  }
+}

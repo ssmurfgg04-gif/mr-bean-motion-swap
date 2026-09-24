@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gesture (the \"stop\" or martial arts hand position) is the same.\n2) **Yes**, the head position and orientation are nearly identical.\n3) **Yes**, the body framing and camera angle match.\n4) **No significant defects**; the hands, fingers, and overall rendering appear clean and consistent with the original.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790227621,
+  "id": "2026092413265942b3e2c7157c47fc",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092413265942b3e2c7157c47fc",
+  "usage": {
+    "completion_tokens": 76,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 407,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 483
+  }
+}

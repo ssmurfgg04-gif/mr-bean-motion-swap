@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) **Yes**, the hand/arm gestures (left hand raised near face, right hand extended forward) are the same.\n2) **Yes**, the head position and orientation are identical.\n3) **Yes**, the body framing and camera angle are consistent.\n4) **Yes**, there is a rendering defect: an unnatural black rectangular artifact is visible on the neck/collar area of the swapped face.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790227625,
+  "id": "2026092413270336e334c673c143e0",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092413270336e334c673c143e0",
+  "usage": {
+    "completion_tokens": 82,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 407,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 489
+  }
+}

@@ -131,13 +131,32 @@ person question, never naming the target identity).
 
 ## Results
 
+### v2 pipeline run (Character Swap + edited-first-frame ref) — CURRENT BEST
+
+- **`results/final_reel_v3.mp4`** — full reel, identity FIXED: the second subject is
+  now recognizably Rowan Atkinson / Mr. Bean doing Jackie Chan's exact moves.
+- Build: 6 Medium-Res chunks swapped in parallel on fresh runner IPs
+  (~110-140 GPU-s each, anonymous quota), one chunk re-run automatically on a
+  fresh IP after a ZeroGPU abort; frame-exact assembly; background-plate
+  compositing; original audio.
+- Verification (neutral, image-based critique in `results/critique_v3/`):
+  - Identity gate vs a REAL Rowan Atkinson photo: **same_person=true on 4/4
+    timeline frames, confidence 9-10/10** (prompts never name the target).
+  - Motion fidelity: **5/5 matched-time pairs — same gestures, same head
+    positions, same framing**.
+  - Consistency across frames 9/10. Known model-inherent nits: waxy skin
+    texture, fast-hand blur, tie bleed at the collar.
+- A/B vs Pose Retarget mode (same ref): Retarget did NOT transfer the tweed
+  wardrobe and yielded slightly weaker identity — Character Swap kept the win.
+
+### v1 (deprecated, kept for transparency)
+
 - `results/final_reel_v2.mp4` — v1 pipeline result. **Known issue (found in
-  v2 audit): the swapped subject is a generic identity, not Mr. Bean — the v1
-  critique's "identity confirmed" verdict was sycophantic.** Kept for
-  transparency; superseded by v2 runs.
-- v2 run results land in workflow artifacts (`assembled-result/`).
-- `results/critique/` — v1 4-round critique reports (methodology deprecated:
-  leading prompts, see identity_gate.py for the fixed approach).
+  v2 audit): the swapped subject was a generic identity, not Mr. Bean — the v1
+  critique's "identity confirmed" verdict was sycophantic.** Methodology fixes:
+  edited-first-frame refs (`refs/bean_scene_A.png`) + neutral identity gate
+  (`scripts/identity_gate.py`).
+- `results/critique/` — v1 4-round critique reports (leading prompts, deprecated).
 
 ## Notes & limits
 

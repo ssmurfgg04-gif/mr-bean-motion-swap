@@ -106,6 +106,7 @@ jobs:
       max-parallel: 20
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    continue-on-error: true   # quota/abort failures are handled by assemble+swap-retry
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -192,6 +193,7 @@ jobs:
       fail-fast: false
       matrix:
         chunk: ${{ fromJSON(needs.assemble.outputs.missing) }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

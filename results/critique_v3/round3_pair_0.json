@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) Yes, the arms are in the same position (down by the sides).\n2) No, the head orientation and facial features are different.\n3) Yes, the body framing and background alignment are the same.\n4) Yes, there is a rendering defect where a tie appears over the sweater collar.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790227616,
+  "id": "2026092413265481c3af98146d4aaf",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092413265481c3af98146d4aaf",
+  "usage": {
+    "completion_tokens": 63,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 407,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 470
+  }
+}
